@@ -48,6 +48,7 @@ builder:
 env:
   clear:
     NODE_ENV: production
+    DATABASE_URL: <%= ENV["DATABASE_URL"] %>
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
@@ -89,7 +90,7 @@ accessories:
         POSTGRES_DB: nuxt_app
         POSTGRES_USER: nuxt_user
       secret:
-        - KAMAL_REGISTRY_PASSWORD
+        - KAMAL_REGISTRY_PASSWORD   # re‐use the same secret as the DB password
     directories:
       - data:/var/lib/postgresql/data
   # redis:
