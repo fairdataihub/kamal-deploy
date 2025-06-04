@@ -85,8 +85,9 @@ env:
 accessories:
   db:
     image: postgres:16
-    host: <%= ENV["KAMAL_SERVER_IP"] %>
-    port: 5432
+    # host in the container, not the host machine.
+    # host: <%= ENV["KAMAL_SERVER_IP"] %>
+    # port: 5432
 
     env:
       clear:
@@ -102,4 +103,3 @@ accessories:
   #   host: 192.168.0.2
   #   port: 6379
   #   directories:
-  #     - data:/data
