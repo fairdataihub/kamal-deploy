@@ -40,12 +40,23 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Create startup script that runs migrations before starting the app
+#  1) loops until Postgres is reachable
+#  2) runs Prisma migrations
+#  3) finally launches Nuxt
 RUN printf '%s\n' \
     '#!/bin/sh' \
-   'set -e' \
-   'echo "Running Prisma migrations..."' \
-   'npx prisma migrate deploy' \
-   'echo "Migrations complete, starting Nuxt..."' \
+    'set -e' \
+    '' \
+    'echo "Waiting for database at db:5432..."' \
+    'until pg_isready -h db -p 5432 -U nuxt_user; do' \
+    '  echo "  still waiting… sleep 2s"' \
+    '  sleep 2' \
+    'done' \
+    '' \
+    'echo "Running Prisma migrations…"' \
+    'npx prisma migrate deploy' \
+    '' \
+    'echo "Migrations complete. Starting Nuxt…"' \
     'exec node /app/server/index.mjs' \
   > /app/start.sh && \
   chmod +x /app/start.sh
