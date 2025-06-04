@@ -24,6 +24,8 @@ proxy:
   host: <%= ENV["KAMAL_APP_DOMAIN"] %>
   # Proxy connects to your container on port 80 by default.
   app_port: 3000
+  healthcheck:
+    path: /up
 
 # Credentials for your image host.
 registry:
@@ -85,12 +87,14 @@ accessories:
     image: postgres:16
     host: <%= ENV["KAMAL_SERVER_IP"] %>
     port: 5432
+
     env:
       clear:
         POSTGRES_DB: nuxt_app
         POSTGRES_USER: nuxt_user
       secret:
-        - KAMAL_REGISTRY_PASSWORD   # re‐use the same secret as the DB password
+        - POSTGRES_PASSWORD
+
     directories:
       - data:/var/lib/postgresql/data
   # redis:
