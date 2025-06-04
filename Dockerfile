@@ -38,11 +38,19 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create startup script that runs migrations before starting the app
-RUN echo '#!/bin/sh' > /app/start.sh && \
-  # echo 'npm run prisma:migrate:deploy' >> /app/start.sh && \
-  echo 'exec node /app/server/index.mjs' >> /app/start.sh && \
+RUN printf '%s\n' \
+    '#!/bin/sh' \
+   'set -e' \
+   'echo "Running Prisma migrations..."' \
+   'npx prisma migrate deploy' \
+   'echo "Migrations complete, starting Nuxt..."' \
+    'exec node /app/server/index.mjs' \
+  > /app/start.sh && \
   chmod +x /app/start.sh
 
 EXPOSE 3000
 
-CMD ["/bin/sh", "/app/start.sh"]s
+HEALTHCHECK --interval=5s --timeout=2s --start-period=10s \
+  CMD wget --spider --quiet http://localhost:3000/up || exit 1
+
+CMD ["/bin/sh", "/app/start.sh"]
