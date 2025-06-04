@@ -36,6 +36,8 @@ WORKDIR /app
 COPY --from=builder /app/.output ./
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy the Prisma schema & migrations, so `prisma migrate deploy` can see them
+COPY --from=builder /app/prisma ./prisma
 
 # Create startup script that runs migrations before starting the app
 RUN printf '%s\n' \
