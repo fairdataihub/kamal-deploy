@@ -50,14 +50,14 @@ RUN printf '%s\n' \
     '' \
     'echo "Waiting for database at db:5432..."' \
     'until nc -z db 5432; do' \
-    '  echo "  still waiting… sleeping 2s"' \
+    '  echo "  waiting... sleeping 2s"' \
     '  sleep 2' \
     'done' \
     '' \
-    'echo "Running Prisma migrations…"' \
+    'echo "Running migration..."' \
     'npx prisma migrate deploy' \
     '' \
-    'echo "Migrations complete. Starting Nuxt…"' \
+    'echo "Migrations complete. Starting..."' \
     'exec node /app/server/index.mjs' \
   > /app/start.sh && \
   chmod +x /app/start.sh
