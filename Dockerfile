@@ -27,7 +27,8 @@ FROM node:20-alpine
 LABEL maintainer="FAIR Data Innovations Hub <contact@fairdataihub.org>" \
   description="Testing Kamal workflow..."
 
-RUN apk add --no-cache openssl
+# Busybox is used netcat for waiting for Postgres to be ready
+RUN apk add --no-cache openssl busybox-extras
 
 WORKDIR /app
 
@@ -40,7 +41,7 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Create startup script that runs migrations before starting the app
-#  1) loops until Postgres is reachable
+#  1) loops until Postgres is reachable using netcat
 #  2) runs Prisma migrations
 #  3) finally launches Nuxt
 RUN printf '%s\n' \
@@ -48,8 +49,8 @@ RUN printf '%s\n' \
     'set -e' \
     '' \
     'echo "Waiting for database at db:5432..."' \
-    'until pg_isready -h db -p 5432 -U nuxt_user; do' \
-    '  echo "  still waiting… sleep 2s"' \
+    'until nc -z db 5432; do' \
+    '  echo "  still waiting… sleeping 2s"' \
     '  sleep 2' \
     'done' \
     '' \
