@@ -49,7 +49,7 @@ RUN printf '%s\n' \
     'set -e' \
     '' \
     'echo "Waiting for database at ${DB_HOST}:5432..."' \
-    'until nc -z "${KAMAL_SERVER_IP}" 5432; do' \
+    'until nc -z "${DB_HOST}" 5432; do' \
     '  echo "  waiting… sleeping 2s"' \
     '  sleep 2' \
     'done' \
