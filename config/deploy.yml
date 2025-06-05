@@ -73,7 +73,7 @@ env:
 # hitting 404 on in-flight requests. Combines all files from new and old
 # version inside the asset_path.
 #
-# asset_path: /app/public/assets
+asset_path: /public/assets
 
 # Configure rolling deploys by setting a wait time between batches of restarts.
 #
@@ -88,12 +88,10 @@ accessories:
     image: postgres:16
     roles:
       - web
-    port: 5432
+    # port: 5432  #removing port will prevent exposing the database to the outside world
+    # the ui communicates with the database via bridge network
 
     env:
-      # clear:
-      #   POSTGRES_DB: nuxt_app
-      #   POSTGRES_USER: nuxt_user
       secret:
         - POSTGRES_DB
         - POSTGRES_USER
