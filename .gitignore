@@ -1,5 +1,6 @@
 # Nuxt dev/build outputs
 db-docker-compose.yml
+postgres-data
 .output
 .data
 .nuxt
