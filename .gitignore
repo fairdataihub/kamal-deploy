@@ -1,4 +1,5 @@
 # Nuxt dev/build outputs
+db-docker-compose.yml
 .output
 .data
 .nuxt
