@@ -49,7 +49,7 @@ builder:
 #
 env:
   clear:
-    NODE_ENV: production
+    NODE_ENV: test
     DATABASE_URL: <%= ENV["DATABASE_URL"] %>
     DB_HOST: <%= ENV["DB_HOST"] %>
 
@@ -91,10 +91,12 @@ accessories:
     port: 5432
 
     env:
-      clear:
-        POSTGRES_DB: nuxt_app
-        POSTGRES_USER: nuxt_user
+      # clear:
+      #   POSTGRES_DB: nuxt_app
+      #   POSTGRES_USER: nuxt_user
       secret:
+        - POSTGRES_DB
+        - POSTGRES_USER
         - POSTGRES_PASSWORD
 
     directories:

@@ -64,7 +64,4 @@ RUN printf '%s\n' \
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=5s --timeout=2s --start-period=10s \
-  CMD wget --spider --quiet http://localhost:3000/up || exit 1
-
 CMD ["/bin/sh", "/app/start.sh"]
