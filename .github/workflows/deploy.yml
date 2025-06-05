@@ -1,22 +1,18 @@
-name: Deploy to production environment
+name: Deploy to test environment (slugz test server)
 
 concurrency:
-  group: production
+  group: test
   cancel-in-progress: true
 
 on:
   push:
     branches:
       - kamal-deploy
-  workflow_dispatch:
 
 jobs:
-  deploy-ui:
+  deploy:
     runs-on: ubuntu-latest
-    environment: prd
-    defaults:
-      run:
-        working-directory: ui
+    environment: test
 
     env:
       DOCKER_BUILDKIT: 1
@@ -42,12 +38,10 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Login to Azure Container Registry
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
-          password: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      - name: Login to DigitalOcean Droplet
+        run: |
+          ssh-keyscan -H ${{ secrets.DIGITALOCEAN_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=no ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SERVER_IP }} "echo 'Logged into DigitalOcean Droplet'"
 
       - name: Set up Docker Buildx for cache
         uses: docker/setup-buildx-action@v3
@@ -70,24 +64,24 @@ jobs:
       - run: kamal redeploy
       # - run: kamal redeploy --verbose
 
-  migrate-db:
-    runs-on: ubuntu-latest
-    environment: prd
-    defaults:
-      run:
-        working-directory: ui
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # migrate-db:
+  #   runs-on: ubuntu-latest
+  #   environment: prd
+  #   defaults:
+  #     run:
+  #       working-directory: ui
+  #   env:
+  #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
 
-      - run: yarn install
+  #     - run: yarn install
 
-      - run: yarn prisma:generate
+  #     - run: yarn prisma:generate
 
-      - run: yarn prisma:migrate:deploy > /dev/null
+  #     - run: yarn prisma:migrate:deploy > /dev/null
