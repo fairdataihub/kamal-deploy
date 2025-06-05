@@ -16,13 +16,15 @@ jobs:
 
     env:
       DOCKER_BUILDKIT: 1
-      KAMAL_REGISTRY_LOGIN_SERVER: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
       KAMAL_SERVER_IP: ${{ secrets.KAMAL_SERVER_IP }}
       KAMAL_APP_DOMAIN: ${{ secrets.KAMAL_APP_DOMAIN }}
       KAMAL_APP_NAME_UI: ${{ secrets.KAMAL_APP_NAME_UI }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
 
     steps:
       - uses: actions/checkout@v4
@@ -36,12 +38,12 @@ jobs:
 
       - uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Login to DigitalOcean Droplet
         run: |
-          ssh-keyscan -H ${{ secrets.DIGITALOCEAN_SERVER_IP }} >> ~/.ssh/known_hosts
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SERVER_IP }} "echo 'Logged into DigitalOcean Droplet'"
+          ssh-keyscan -H ${{ secrets.KAMAL_SERVER_IP }} >> ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.KAMAL_SERVER_IP }} "echo 'Logged into DigitalOcean Droplet'"
 
       - name: Set up Docker Buildx for cache
         uses: docker/setup-buildx-action@v3
