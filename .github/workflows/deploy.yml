@@ -43,12 +43,6 @@ jobs:
           printf "%s\n" "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      - name: Login to DigitalOcean Droplet
-        run: |
-          ssh-keyscan -H ${{ secrets.KAMAL_SERVER_IP }} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no root@${{ secrets.KAMAL_SERVER_IP }} "echo 'Logged into DigitalOcean Droplet'"
-
-
       - name: Set up Docker Buildx for cache
         uses: docker/setup-buildx-action@v3
 
