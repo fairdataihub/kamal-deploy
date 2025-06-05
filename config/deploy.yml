@@ -51,6 +51,7 @@ env:
   clear:
     NODE_ENV: production
     DATABASE_URL: <%= ENV["DATABASE_URL"] %>
+    DB_HOST: db
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
@@ -85,9 +86,9 @@ env:
 accessories:
   db:
     image: postgres:16
-    # host in the container, not the host machine.
-    # host: <%= ENV["KAMAL_SERVER_IP"] %>
-    # port: 5432
+    roles:
+      - web
+    port: 5432
 
     env:
       clear:
