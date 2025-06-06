@@ -27,7 +27,8 @@ FROM node:20-alpine
 LABEL maintainer="FAIR Data Innovations Hub <contact@fairdataihub.org>" \
   description="Testing Kamal workflow..."
 
-RUN apk add --no-cache openssl
+# Busybox is added (allows waiting for Postgres to be ready with netcat)
+RUN apk add --no-cache openssl busybox-extras
 
 WORKDIR /app
 
@@ -36,13 +37,30 @@ WORKDIR /app
 COPY --from=builder /app/.output ./
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/prisma ./prisma 
 
 # Create startup script that runs migrations before starting the app
-RUN echo '#!/bin/sh' > /app/start.sh && \
-  # echo 'npm run prisma:migrate:deploy' >> /app/start.sh && \
-  echo 'exec node /app/server/index.mjs' >> /app/start.sh && \
+#  1) loops until Postgres is reachable using netcat
+#  2) runs Prisma migrations
+#  3) finally launches Nuxt
+RUN printf '%s\n' \
+  '#!/bin/sh' \
+  'set -e' \
+  '' \
+  'echo "Waiting for database at ${DB_HOST}:5432..."' \
+  'until nc -z "${DB_HOST}" 5432; do' \
+  '  echo "  waiting… sleeping 2s"' \
+  '  sleep 2' \
+  'done' \
+  '' \
+  'echo "Running migration..."' \
+  'npx prisma migrate deploy' \
+  '' \
+  'echo "Migrations complete. Starting..."' \
+  'exec node /app/server/index.mjs' \
+  > /app/start.sh && \
   chmod +x /app/start.sh
 
 EXPOSE 3000
 
-CMD ["/bin/sh", "/app/start.sh"]s
+CMD ["/bin/sh", "/app/start.sh"]
