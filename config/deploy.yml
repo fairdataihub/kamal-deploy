@@ -9,7 +9,12 @@ image: <%= ENV["KAMAL_REGISTRY_USERNAME"] %>/nuxt-app
 # Deploy to these servers.
 servers:
   web:
-    - <%= ENV["KAMAL_SERVER_IP"] %>
+    hosts:
+      - <%= ENV["KAMAL_SERVER_IP"] %>
+
+    options:
+      # Use a custom network for the web server to isolate it from the public internet.
+      network: private
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -86,8 +91,9 @@ asset_path: /public/assets
 accessories:
   db:
     image: postgres:16
-    roles:
-      - web
+    host: <%= ENV["KAMAL_SERVER_IP"] %>
+    # roles:
+    #   - web
     # port: 5432  #removing port will prevent exposing the database to the outside world
     # the ui communicates with the database via bridge network
 
@@ -99,6 +105,10 @@ accessories:
 
     directories:
       - data:/var/lib/postgresql/data
+
+    options:
+      # Use a custom network for the database to isolate it from the public internet.
+      network: private
   # redis:
   #   image: valkey/valkey:8
   #   host: 192.168.0.2
