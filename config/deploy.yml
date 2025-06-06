@@ -11,10 +11,6 @@ servers:
   web:
     hosts:
       - <%= ENV["KAMAL_SERVER_IP"] %>
-
-    options:
-      # Use a custom network for the web server to isolate it from the public internet.
-      network: kamal
   # job:
   #   hosts:
   #     - 192.168.0.1
