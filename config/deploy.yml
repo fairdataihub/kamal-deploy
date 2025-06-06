@@ -14,7 +14,7 @@ servers:
 
     options:
       # Use a custom network for the web server to isolate it from the public internet.
-      network: private
+      network: kamal
   # job:
   #   hosts:
   #     - 192.168.0.1
@@ -108,7 +108,7 @@ accessories:
 
     options:
       # Use a custom network for the database to isolate it from the public internet.
-      network: private
+      network: kamal
   # redis:
   #   image: valkey/valkey:8
   #   host: 192.168.0.2
