@@ -41,7 +41,7 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/prisma ./prisma
 
 # Copy our startup script and make it executable
-COPY start.sh /app/scripts/start.sh
+COPY scripts/start.sh /app/scripts/start.sh
 RUN chmod +x /app/scripts/start.sh
 
 EXPOSE 3000
