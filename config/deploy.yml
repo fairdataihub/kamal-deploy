@@ -99,3 +99,25 @@ accessories:
   #   host: 192.168.0.2
   #   port: 6379
   #   directories:
+
+  pg-backup:
+    image: kartoza/pg-backup:latest
+    roles:
+      - web
+    env:
+      clear:
+        CRON_SCHEDULE: "@daily"
+        REMOVE_BEFORE: 30
+        STORAGE_BACKEND: s3
+        SSL_SECURE: "true"
+        POSTGRES_MAJOR_VERSION: "16"
+      secret:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - ACCESS_KEY_ID
+      - SECRET_ACCESS_KEY
+      - BUCKET
+      - HOST_BUCKET
+      - HOST_BASE
+      - DEFAULT_REGION
