@@ -1,0 +1,4 @@
+# run every minute for testing; later switch to "@daily" or "0 2 * * *"
+* * * * * root /backup-scripts/backups.sh >> /var/log/cron.log 2>&1
+
+# (blank line)

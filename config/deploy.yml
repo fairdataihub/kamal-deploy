@@ -104,6 +104,11 @@ accessories:
     image: kartoza/pg-backup:latest
     roles:
       - web
+
+    files:
+      - scripts/backups.sh:/scripts/backups.sh
+      - scripts/backup-cron:/etc/cron.d/backup-cron
+
     directories:
       - backups:/backups
     env:
