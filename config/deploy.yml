@@ -104,6 +104,8 @@ accessories:
     image: kartoza/pg-backup:latest
     roles:
       - web
+    directories:
+      - backups:/backups
     env:
       clear:
         CRON_SCHEDULE: "@daily"
