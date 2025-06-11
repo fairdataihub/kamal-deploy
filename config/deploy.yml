@@ -102,10 +102,12 @@ accessories:
 
   pg-backup:
     image: kartoza/pg-backup:latest
-    host: <%= ENV["KAMAL_SERVER_IP"] %>
+    roles:
+      - web
+    port: 5432
 
     files:
-      - scripts/backups.sh:/scripts/backups.sh
+      - scripts/backups.sh:/backup-scripts/backups.sh
       - scripts/backup-cron:/etc/cron.d/backup-cron
 
     directories:
