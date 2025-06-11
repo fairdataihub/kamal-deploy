@@ -102,8 +102,7 @@ accessories:
 
   pg-backup:
     image: kartoza/pg-backup:latest
-    roles:
-      - web
+    host: <%= ENV["KAMAL_SERVER_IP"] %>
 
     files:
       - scripts/backups.sh:/scripts/backups.sh
@@ -115,9 +114,9 @@ accessories:
       clear:
         CRON_SCHEDULE: "@hourly"
         REMOVE_BEFORE: 30
-        STORAGE_BACKEND: s3
-        SSL_SECURE: "true"
-        POSTGRES_MAJOR_VERSION: "16"
+        STORAGE_BACKEND: S3
+        SSL_SECURE: "True"
+        POSTGRES_MAJOR_VERSION: 16
       secret:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
