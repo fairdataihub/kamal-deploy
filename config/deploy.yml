@@ -113,7 +113,7 @@ accessories:
       - backups:/backups
     env:
       clear:
-        CRON_SCHEDULE: "@daily"
+        CRON_SCHEDULE: "* * * * *"
         REMOVE_BEFORE: 30
         STORAGE_BACKEND: s3
         SSL_SECURE: "true"
