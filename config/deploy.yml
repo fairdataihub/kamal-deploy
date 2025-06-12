@@ -104,8 +104,8 @@ accessories:
     image: eeshugerman/postgres-backup-s3:16
     host: <%= ENV["KAMAL_SERVER_IP"] %>
 
-    # files:
-    #   - scripts/backups.sh:/backup.sh
+    files:
+      - scripts/backups.sh:/backup.sh
 
     env:
       clear:
