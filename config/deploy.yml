@@ -103,7 +103,6 @@ accessories:
   pg-backup:
     image: kartoza/pg-backup:latest
     host: <%= ENV["KAMAL_SERVER_IP"] %>
-    port: 5432
 
     files:
       - scripts/backups.sh:/backup-scripts/backups.sh
@@ -118,10 +117,11 @@ accessories:
         STORAGE_BACKEND: S3
         SSL_SECURE: "True"
         POSTGRES_MAJOR_VERSION: 16
+        POSTGRES_HOST: <%= ENV["DB_HOST"] %>
+        POSTGRES_USER: <%= ENV["POSTGRES_USER"] %>
+        DBLIST: <%= ENV["POSTGRES_DB"] %>
       secret:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
+      - POSTGRES_PASS
       - ACCESS_KEY_ID
       - SECRET_ACCESS_KEY
       - BUCKET
