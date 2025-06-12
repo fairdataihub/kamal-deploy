@@ -116,7 +116,7 @@ accessories:
         S3_SECRET_ACCESS_KEY: <%= ENV["SECRET_ACCESS_KEY"] %>
         S3_BUCKET:            <%= ENV["BUCKET"] %>
         S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>
-        S3_PREFIX:            <%= ENV["S3_PREFIX"] %>   # optional folder, e.g. “backups”
+        # S3_PREFIX:            <%= ENV["S3_PREFIX"] %>   # optional folder, e.g. “backups”
 
         # Point at your Kamal Postgres accessory
         POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
