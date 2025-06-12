@@ -111,6 +111,7 @@ accessories:
 
     directories:
       - /backups:/backup-scripts/backups
+      - /backups:/backups
 
     env:
       clear:
@@ -135,5 +136,7 @@ accessories:
       - HOST_BUCKET
       - HOST_BASE
       - DEFAULT_REGION
+
+  
         # - PASSPHRASE        # only if you want GPG‐encrypted dumps
 
