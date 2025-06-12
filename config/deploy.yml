@@ -134,7 +134,8 @@ accessories:
 
   pg-backup:
     image: kartoza/pg-backup:latest
-    host: <%= ENV["KAMAL_SERVER_IP"] %>
+    roles:
+      - web
 
     # files:
     #   - scripts/backup.sh:/backup-scripts/backups.sh
