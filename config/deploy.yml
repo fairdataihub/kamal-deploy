@@ -105,7 +105,7 @@ accessories:
     host: <%= ENV["KAMAL_SERVER_IP"] %>
 
     files:
-      - scripts/backup.sh:/backup.sh
+      - scripts/backups.sh:/backup.sh
 
     env:
       clear:
