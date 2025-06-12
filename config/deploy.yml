@@ -25,6 +25,7 @@ proxy:
   host: <%= ENV["KAMAL_APP_DOMAIN"] %>
   # Proxy connects to your container on port 80 by default.
   app_port: 3000
+  forward_headers: true
   healthcheck:
     path: /up
     timeout: 60
@@ -50,8 +51,9 @@ builder:
 env:
   clear:
     NODE_ENV: test
-    DATABASE_URL: <%= ENV["DATABASE_URL"] %>
-    DB_HOST: <%= ENV["DB_HOST"] %>
+  secret:
+    - DATABASE_URL
+    - DB_HOST
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
@@ -151,27 +153,26 @@ accessories:
 
     env:
       clear:
-        CRON_SCHEDULE: "@hourly"
+        CRON_SCHEDULE: "* * * * *"
         REMOVE_BEFORE: 30
         STORAGE_BACKEND: S3
         SSL_SECURE: "True"
         POSTGRES_MAJOR_VERSION: 16
-        POSTGRES_HOST: <%= ENV["DB_HOST"] %>
-        POSTGRES_USER: <%= ENV["POSTGRES_USER"] %>
-        POSTGRES_PASS: <%= ENV["POSTGRES_PASSWORD"] %>
         DBLIST: "<%= ENV['POSTGRES_DB'] %>"
 
         # Point at your Kamal Postgres accessory
-        POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
-        POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
         POSTGRES_USER:     <%= ENV["POSTGRES_USER"] %>
+        POSTGRES_PASS: <%= ENV["POSTGRES_PASSWORD"] %>
+        POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
+        POSTGRES_PORT: 5432
+        POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
       secret:
-      - ACCESS_KEY_ID
-      - SECRET_ACCESS_KEY
-      - BUCKET
-      - HOST_BUCKET
-      - HOST_BASE
-      - DEFAULT_REGION
+        - ACCESS_KEY_ID
+        - SECRET_ACCESS_KEY
+        - BUCKET
+        - HOST_BUCKET
+        - HOST_BASE
+        - DEFAULT_REGION
 
   
 
