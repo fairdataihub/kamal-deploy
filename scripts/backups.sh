@@ -1,36 +1,58 @@
-#!/bin/sh
+ #! /bin/sh
+-
 set -eu
 set -o pipefail
 
-# load in all the env vars (S3_*, POSTGRES_*, BACKUP_KEEP_DAYS, etc.)
-source ./env.sh
+ source ./env.sh
 
-echo "[$(date)] Dumping database '$POSTGRES_DATABASE' → /backups/${POSTGRES_DATABASE}_*.sql.gz"
-export PGPASSWORD="$POSTGRES_PASSWORD"
-TS=$(date +"%Y%m%d_%H%M%S")
-OUT="/backups/${POSTGRES_DATABASE}_${TS}.sql.gz"
+ echo "Creating backup of $POSTGRES_DATABASE database..."
+ pg_dump --format=custom \
+         -h $POSTGRES_HOST \
+         -p $POSTGRES_PORT \
+         -U $POSTGRES_USER \
+         -d $POSTGRES_DATABASE \
+         $PGDUMP_EXTRA_OPTS \
+         > db.dump
 
-pg_dump --format=custom \
-        --username="$POSTGRES_USER" \
-        --host="$POSTGRES_HOST" \
-        --port="${POSTGRES_PORT:-5432}" \
-        "$POSTGRES_DATABASE" \
-| gzip > "$OUT"
+ timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
 
-echo "[$(date)] Uploading to s3://${S3_BUCKET}/${S3_PREFIX}/"
-# disable SSL verify and use the correct endpoint
++s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump"
+
+ if [ -n "$PASSPHRASE" ]; then
+   echo "Encrypting backup..."
+   rm -f db.dump.gpg
+   gpg --symmetric --batch --passphrase "$PASSPHRASE" db.dump
+   rm db.dump
+   local_file="db.dump.gpg"
+   s3_uri="${s3_uri_base}.gpg"
+ else
+   local_file="db.dump"
+   s3_uri="$s3_uri_base"
+ fi
+
+ echo "Uploading backup to $S3_BUCKET..."
 aws --no-verify-ssl \
     --endpoint-url "https://${S3_ENDPOINT}" \
-    s3 cp "$OUT" "s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${TS}.sql.gz" \
-    --no-guess-mime-type \
-    --content-type application/octet-stream
+    s3 cp "$local_file" "$s3_uri"
+ rm "$local_file"
 
-rm "$OUT"
+ echo "Backup complete."
 
-if [ -n "${BACKUP_KEEP_DAYS:-}" ]; then
-  echo "[$(date)] Pruning local dumps older than $BACKUP_KEEP_DAYS days"
-  find /backups -type f -name "${POSTGRES_DATABASE}_*.sql.gz" \
-       -mtime +${BACKUP_KEEP_DAYS} -delete
-fi
+ if [ -n "$BACKUP_KEEP_DAYS" ]; then
+   sec=$((86400*BACKUP_KEEP_DAYS))
+   date_from_remove=$(date -d "@$(($(date +%s) - sec))" +%Y-%m-%d)
+   backups_query="Contents[?LastModified<='${date_from_remove} 00:00:00'].{Key: Key}"
 
-echo "[$(date)] Backup complete."
+   echo "Removing old backups from $S3_BUCKET..."
+  aws --no-verify-ssl \
+      --endpoint-url "https://${S3_ENDPOINT}" \
+      s3api list-objects \
+      --bucket "${S3_BUCKET}" \
+      --prefix "${S3_PREFIX}" \
+      --query "${backups_query}" \
+      --output text \
+    | xargs -n1 -t -I 'KEY' aws --no-verify-ssl \
+        --endpoint-url "https://${S3_ENDPOINT}" \
+        s3 rm "s3://${S3_BUCKET}/KEY"
+   echo "Removal complete."
+ fi
