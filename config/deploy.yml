@@ -129,5 +129,5 @@ accessories:
         POSTGRES_USER:     <%= ENV["POSTGRES_USER"] %>
       secret:
         - POSTGRES_PASSWORD
-        - PASSPHRASE        # only if you want GPG‐encrypted dumps
+        # - PASSPHRASE        # only if you want GPG‐encrypted dumps
 
