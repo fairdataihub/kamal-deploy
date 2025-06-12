@@ -110,7 +110,7 @@ accessories:
       - scripts/backup-cron:/etc/cron.d/backup-cron
 
     directories:
-      - /backups:/backup
+      - /backups:/backup-scripts/backups
 
     env:
       clear:
