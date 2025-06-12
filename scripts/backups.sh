@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+export PGPASSWORD="$POSTGRES_PASS"
+
 # Timestamp for this run
 TS=$(date +%Y%m%d_%H%M%S)
 OUT="/backups/${POSTGRES_DB}_${TS}.sql.gz"

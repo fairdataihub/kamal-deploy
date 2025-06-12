@@ -100,31 +100,29 @@ accessories:
   #   port: 6379
   #   directories:
 
-  pg-backup:
-    image: kartoza/pg-backup:latest
-    host: <%= ENV["KAMAL_SERVER_IP"] %>
+  db_backup:
+    image: eeshugerman/postgres-backup-s3:16
+    roles:
+      - web
 
-    files:
-      - scripts/backups.sh:/backup-scripts/backups.sh
-      - scripts/backup-cron:/etc/cron.d/backup-cron
-
-    directories:
-      - backups:/backups
     env:
       clear:
-        CRON_SCHEDULE: "@hourly"
-        REMOVE_BEFORE: 30
-        STORAGE_BACKEND: S3
-        SSL_SECURE: "True"
-        POSTGRES_MAJOR_VERSION: 16
-        POSTGRES_HOST: <%= ENV["DB_HOST"] %>
-        POSTGRES_USER: <%= ENV["POSTGRES_USER"] %>
-        POSTGRES_PASS: <%= ENV["POSTGRES_PASSWORD"] %>
-        DBLIST: "<%= ENV['POSTGRES_DB'] %>"
+        SCHEDULE:       "@hourly"
+        BACKUP_KEEP_DAYS: "7"
+
+        # S3 / R2 configuration
+        S3_REGION:            "auto"
+        S3_ACCESS_KEY_ID:     <%= ENV["ACCESS_KEY_ID"] %>
+        S3_SECRET_ACCESS_KEY: <%= ENV["SECRET_ACCESS_KEY"] %>
+        S3_BUCKET:            <%= ENV["BUCKET"] %>
+        S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>
+        S3_PREFIX:            <%= ENV["S3_PREFIX"] %>   # optional folder, e.g. “backups”
+
+        # Point at your Kamal Postgres accessory
+        POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
+        POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
+        POSTGRES_USER:     <%= ENV["POSTGRES_USER"] %>
       secret:
-      - ACCESS_KEY_ID
-      - SECRET_ACCESS_KEY
-      - BUCKET
-      - HOST_BUCKET
-      - HOST_BASE
-      - DEFAULT_REGION
+        - POSTGRES_PASSWORD
+        - PASSPHRASE        # only if you want GPG‐encrypted dumps
+
