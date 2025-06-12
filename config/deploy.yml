@@ -136,9 +136,9 @@ accessories:
     image: kartoza/pg-backup:latest
     host: <%= ENV["KAMAL_SERVER_IP"] %>
 
-    files:
-      - scripts/backup.sh:/backup-scripts/backups.sh
-      - scripts/backup-cron:/etc/cron.d/backup-cron
+    # files:
+    #   - scripts/backup.sh:/backup-scripts/backups.sh
+    #   - scripts/backup-cron:/etc/cron.d/backup-cron
 
     directories:
       - /backups:/backup-scripts/backups
