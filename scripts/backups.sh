@@ -1,5 +1,5 @@
- #! /bin/sh
--
+#!/bin/sh
+
 set -eu
 set -o pipefail
 
@@ -32,8 +32,8 @@ s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.du
 
  echo "Uploading backup to $S3_BUCKET..."
 aws --no-verify-ssl \
-    --endpoint-url "https://${S3_ENDPOINT}" \
-    s3 cp "$local_file" "$s3_uri"
+    --endpoint-url "$S3_ENDPOINT" \
+    s3 cp "$OUT" "s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DB}_${TS}.sql.gz" \
  rm "$local_file"
 
  echo "Backup complete."
