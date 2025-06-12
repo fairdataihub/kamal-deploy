@@ -166,6 +166,10 @@ accessories:
         POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
         POSTGRES_PORT: 5432
         POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
+
+        S3CMD_CA_CERT_FILE:   /etc/ssl/certs/ca-certificates.crt
+        SSL_CERT_FILE:        /etc/ssl/certs/ca-certificates.crt
+        REQUESTS_CA_BUNDLE:   /etc/ssl/certs/ca-certificates.crt
       secret:
         - ACCESS_KEY_ID
         - SECRET_ACCESS_KEY
