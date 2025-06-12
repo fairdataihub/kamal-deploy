@@ -2,6 +2,7 @@
 
 set -e
 
+POSTGRES_DB="${POSTGRES_DB:-$POSTGRES_DATABASE}"
 export PGPASSWORD="$POSTGRES_PASS"
 
 # Timestamp for this run
