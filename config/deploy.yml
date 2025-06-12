@@ -109,6 +109,9 @@ accessories:
       - scripts/backup.sh:/backup-scripts/backups.sh
       - scripts/backup-cron:/etc/cron.d/backup-cron
 
+    directories:
+      - /backups:/backup
+
     env:
       clear:
         CRON_SCHEDULE: "@hourly"
