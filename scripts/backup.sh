@@ -6,7 +6,7 @@ export PGPASSWORD="$POSTGRES_PASS"
 
 # Timestamp for this run
 TS=$(date +%Y%m%d_%H%M%S)
-OUT="backup-scripts/backups/${POSTGRES_DB}_${TS}.sql.gz"
+OUT="/backups/${POSTGRES_DB}_${TS}.sql.gz"
 
 
 echo "[$(date)] Dumping $POSTGRES_DB → $OUT"
