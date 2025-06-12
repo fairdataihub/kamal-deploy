@@ -105,8 +105,8 @@ accessories:
     roles:
       - web
 
-    files:
-      - scripts/backups.sh:/backup.sh
+    # files:
+    #   - scripts/backups.sh:/backup.sh
     
     directories:
       - /backups:/backups
