@@ -1,58 +1,71 @@
 #!/bin/sh
-
 set -eu
 set -o pipefail
 
- source ./env.sh
+# Load environment variables from the built-in env.sh
+. ./env.sh
 
- echo "Creating backup of $POSTGRES_DATABASE database..."
- pg_dump --format=custom \
-         -h $POSTGRES_HOST \
-         -p $POSTGRES_PORT \
-         -U $POSTGRES_USER \
-         -d $POSTGRES_DATABASE \
-         $PGDUMP_EXTRA_OPTS \
-         > db.dump
+echo "[$(date)] Creating backup of database '$POSTGRES_DATABASE'..."
+# Ensure pg_dump can authenticate
+export PGPASSWORD="$POSTGRES_PASSWORD"
 
- timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
+# Timestamp and output path
+ts=$(date +"%Y%m%d_%H%M%S")
+out="/backups/${POSTGRES_DATABASE}_${ts}.sql.gz"
 
-s3_uri_base="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump"
+# Dump and compress the database
+default_port="${POSTGRES_PORT:-5432}"
+/usr/bin/pg_dump \
+  --format=custom \
+  --host="$POSTGRES_HOST" \
+  --port="$default_port" \
+  --username="$POSTGRES_USER" \
+  --dbname="$POSTGRES_DATABASE" \
+  $PGDUMP_EXTRA_OPTS \
+| gzip > "$out"
 
- if [ -n "$PASSPHRASE" ]; then
-   echo "Encrypting backup..."
-   rm -f db.dump.gpg
-   gpg --symmetric --batch --passphrase "$PASSPHRASE" db.dump
-   rm db.dump
-   local_file="db.dump.gpg"
-   s3_uri="${s3_uri_base}.gpg"
- else
-   local_file="db.dump"
-   s3_uri="$s3_uri_base"
- fi
+# Prepare S3 URI
+s3_uri="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${ts}.sql.gz"
 
- echo "Uploading backup to $S3_BUCKET..."
+# Encrypt if needed
+if [ -n "${PASSPHRASE:-}" ]; then
+  echo "[$(date)] Encrypting backup..."
+  gpg --symmetric --batch --passphrase="$PASSPHRASE" "$out"
+  rm "$out"
+  out_gpg="${out}.gpg"
+  mv "${out}.gpg" "$out_gpg"
+  s3_uri="${s3_uri}.gpg"
+  local_file="$out_gpg"
+else
+  local_file="$out"
+fi
+
+echo "[$(date)] Uploading backup to ${S3_BUCKET}..."
 aws --no-verify-ssl \
     --endpoint-url "$S3_ENDPOINT" \
-    s3 cp "$OUT" "s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DB}_${TS}.sql.gz" \
- rm "$local_file"
+    s3 cp "$local_file" "$s3_uri" \
+    --no-guess-mime-type \
+    --content-type application/octet-stream
+rm "$local_file"
 
- echo "Backup complete."
+# Prune old backups if configured
+if [ -n "${BACKUP_KEEP_DAYS:-}" ]; then
+  echo "[$(date)] Pruning old backups older than ${BACKUP_KEEP_DAYS} days..."
+  sec=$(( BACKUP_KEEP_DAYS * 86400 ))
+  cutoff=$(date -d "@$(($(date +%s) - sec))" +"%Y-%m-%d")
+  query="Contents[?LastModified<=\'${cutoff} 00:00:00\'].{Key: Key}"
 
- if [ -n "$BACKUP_KEEP_DAYS" ]; then
-   sec=$((86400*BACKUP_KEEP_DAYS))
-   date_from_remove=$(date -d "@$(($(date +%s) - sec))" +%Y-%m-%d)
-   backups_query="Contents[?LastModified<='${date_from_remove} 00:00:00'].{Key: Key}"
-
-   echo "Removing old backups from $S3_BUCKET..."
   aws --no-verify-ssl \
-      --endpoint-url "https://${S3_ENDPOINT}" \
+      --endpoint-url "$S3_ENDPOINT" \
       s3api list-objects \
-      --bucket "${S3_BUCKET}" \
-      --prefix "${S3_PREFIX}" \
-      --query "${backups_query}" \
+      --bucket "$S3_BUCKET" \
+      --prefix "$S3_PREFIX" \
+      --query "$query" \
       --output text \
-    | xargs -n1 -t -I 'KEY' aws --no-verify-ssl \
-        --endpoint-url "https://${S3_ENDPOINT}" \
-        s3 rm "s3://${S3_BUCKET}/KEY"
-   echo "Removal complete."
- fi
+  | xargs -r -n1 -I '{}' aws --no-verify-ssl \
+      --endpoint-url "$S3_ENDPOINT" \
+      s3 rm "s3://$S3_BUCKET/{}"
+  echo "[$(date)] Prune complete."
+fi
+
+echo "[$(date)] Backup finished."
