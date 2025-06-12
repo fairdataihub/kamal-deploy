@@ -119,9 +119,9 @@ accessories:
         POSTGRES_MAJOR_VERSION: 16
         POSTGRES_HOST: <%= ENV["DB_HOST"] %>
         POSTGRES_USER: <%= ENV["POSTGRES_USER"] %>
+        POSTGRES_PASS: <%= ENV["POSTGRES_PASSWORD"] %>
         DBLIST: "<%= ENV['POSTGRES_DB'] %>"
       secret:
-      - POSTGRES_PASS
       - ACCESS_KEY_ID
       - SECRET_ACCESS_KEY
       - BUCKET
