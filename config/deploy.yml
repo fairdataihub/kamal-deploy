@@ -103,11 +103,14 @@ accessories:
 
   db_backup:
     image: eeshugerman/postgres-backup-s3:16
-    host: <%= ENV["KAMAL_SERVER_IP"] %>
-    port: :5432
+    roles:
+      - web
 
     files:
       - scripts/backups.sh:/backup.sh
+    
+    directories:
+      - /etc/ssl/certs:/etc/ssl/certs:ro
 
     env:
       clear:
@@ -144,6 +147,7 @@ accessories:
     directories:
       - /backups:/backup-scripts/backups
       - /backups:/backups
+      - /etc/ssl/certs:/etc/ssl/certs:ro
 
     env:
       clear:
