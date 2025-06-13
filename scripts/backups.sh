@@ -29,31 +29,32 @@ else
   s3_uri="$s3_uri_base"
 fi
 
+set -x
+
 echo "Uploading backup to $S3_BUCKET..."
-aws --no-verify-ssl \
-    --endpoint-url "$S3_ENDPOINT" \
-    s3 cp "$local_file" "$s3_uri" \
-    --no-guess-mime-type \
-    --content-type application/octet-stream
+aws $aws_args s3 cp "$local_file" "$s3_uri"
 rm "$local_file"
 
 echo "Backup complete."
 
+
 if [ -n "$BACKUP_KEEP_DAYS" ]; then
-  sec=$((86400*BACKUP_KEEP_DAYS))
+  sec=$((86400 * BACKUP_KEEP_DAYS))
   date_from_remove=$(date -d "@$(($(date +%s) - sec))" +%Y-%m-%d)
-  backups_query="Contents[?LastModified<='${date_from_remove} 00:00:00'].{Key: Key}"
+  backups_query="Contents[?LastModified<='${date_from_remove}T00:00:00'].Key"
 
   echo "Removing old backups from $S3_BUCKET..."
-  aws --no-verify-ssl \
-      --endpoint-url "$S3_ENDPOINT" \
-      s3api list-objects \
-         --bucket "$S3_BUCKET" \
-     --prefix "$S3_PREFIX" \
-     --query "$backups_query" \
-     --output text \
- | xargs -r -n1 -I 'KEY' aws --no-verify-ssl \
-     --endpoint-url "$S3_ENDPOINT" \
-     s3 rm "s3://$S3_BUCKET/KEY"
+  keys=$(aws $aws_args s3api list-objects-v2 \
+    --bucket "${S3_BUCKET}" \
+    --prefix "${S3_PREFIX}" \
+    --no-paginate \
+    --query "${backups_query}" \
+    --output text 2>/dev/null || echo "")
+
+  if [ -n "$keys" ]; then
+    echo "$keys" | xargs -n1 -t -I {} aws $aws_args s3 rm s3://"${S3_BUCKET}"/{}
+  else
+    echo "No old backups found."
+  fi
   echo "Removal complete."
 fi
