@@ -27,7 +27,7 @@ FROM node:20-alpine
 LABEL maintainer="FAIR Data Innovations Hub <contact@fairdataihub.org>" \
   description="Testing Kamal workflow..."
 
-# Busybox is added (allows waiting for Postgres to be ready with netcat)
+# Busybox is used netcat for waiting for Postgres to be ready
 RUN apk add --no-cache openssl busybox-extras
 
 WORKDIR /app
@@ -37,14 +37,14 @@ WORKDIR /app
 COPY --from=builder /app/.output ./
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/prisma ./prisma 
-
+# Copy the Prisma schema & migrations, so `prisma migrate deploy` can see them
+COPY --from=builder /app/prisma ./prisma
 
 # Copy our startup script and make it executable
-COPY start.sh /app/start.shAdd commentMore actions
-RUN chmod +x /app/start.sh
+COPY scripts/start.sh /app/scripts/start.sh
+RUN chmod +x /app/scripts/start.sh
 
 EXPOSE 3000
 
 # Run startup script that runs migrations before starting the app
-CMD ["/app/start.sh"]
+CMD ["/app/scripts/start.sh"]
