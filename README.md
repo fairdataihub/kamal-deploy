@@ -74,4 +74,48 @@ yarn preview
 bun run preview
 ```
 
+
+## Deployment
+
+We use Kamal for orchestrating deployments. To use Kamal you will need to install Ruby onto your machine. Although possible to install on Windows, we recommend using linux or Windows Subsystem for Linux (WSL) for the best experience.
+
+To install Ruby:
+```bash
+# Ubuntu/Debian
+sudo apt install ruby-full
+# Fedora
+sudo dnf install ruby
+# macOS
+brew install ruby
+# Windows (WSL)
+sudo apt install ruby-full
+```
+
+To then install Kamal, run:
+
+```bash
+gem install kamal
+```
+
+To deploy the application, run:
+
+```bash
+kamal setup
+```
+
+To access an accessory such as the database or backups, you can use:
+
+```bash
+# Example to manually run a backup script
+kamal accessory exec <accessory_name> --interactive --reuse "sh ./backup.sh"
+
+# To access the database shell with bash
+kamal accessory exec <accessory_name> --interactive --reuse "bash"
+```
+
+To access the web app's shell, you can use:
+```bash
+kamal app exec --interactive --reuse "sh"
+```
+
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
