@@ -110,7 +110,7 @@ accessories:
 
     # Import the backup script from the host to the container
     files:
-      - scripts/backups.sh:/backup.sh
+      - scripts/backup.sh:/backup.sh
     
     # import ssl certificates from the host to the container
     directories:
