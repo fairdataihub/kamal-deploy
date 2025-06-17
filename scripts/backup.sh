@@ -29,7 +29,7 @@ else
   s3_uri="$s3_uri_base"
 fi
 
-set -x
+set -x # Remove this line to disable debug output
 
 echo "Uploading backup to $S3_BUCKET..."
 aws $aws_args s3 cp "$local_file" "$s3_uri"
