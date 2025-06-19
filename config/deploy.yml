@@ -56,9 +56,12 @@ env:
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
-#
-# aliases:
-#   shell: app exec --interactive --reuse "bash"
+aliases:
+  web-shell: app exec --interactive --reuse "sh"
+  db-shell: accessory exec db --interactive --reuse "bash"
+  db-backup-shell: accessory exec db-backup --interactive --reuse "sh"
+  backup-db: accessory db-backup exec --interactive "sh ./backup.sh"
+  restore-db: accessory db-backup exec --interactive "sh ./restore.sh"
 
 # Use a different ssh user than root
 #
@@ -89,7 +92,7 @@ accessories:
     host: <%= ENV["KAMAL_SERVER_IP"] %>
 
     directories:
-      - /data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts
+      - /data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts (auto creates host directory if it doesn't exist)
     env:
       secret:
         - POSTGRES_DB
@@ -107,7 +110,7 @@ accessories:
       - web # Deploys to all servers in the web role
 
     files:
-      - scripts/backup.sh:/backup.sh # Import the backup script from the host to the container
+      - scripts/backup.sh:/backup.sh # Import the backup script from the host to the container (auto creates host directory if it doesn't exist)
     
     directories:
       - /etc/ssl/certs:/etc/ssl/certs:ro # import ssl certificates from the host to the container

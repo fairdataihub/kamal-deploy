@@ -38,10 +38,11 @@ rm "$local_file"
 echo "Backup complete."
 
 
+# TODO: Debug list-objects-v2 --query filtering
 if [ -n "$BACKUP_KEEP_DAYS" ]; then
   sec=$((86400 * BACKUP_KEEP_DAYS))
-  date_from_remove=$(date -d "@$(($(date +%s) - sec))" +%Y-%m-%d)
-  backups_query="Contents[?LastModified<='${date_from_remove}T00:00:00'].Key"
+  date_from_remove=$(date -u -d "@$(($(date +%s) - sec))" +"%Y-%m-%dT%H:%M:%S.%6N+00:00")
+  backups_query="Contents[?LastModified<=\`${date_from_remove}\`].Key"
 
   echo "Removing old backups from $S3_BUCKET..."
   keys=$(aws $aws_args s3api list-objects-v2 \

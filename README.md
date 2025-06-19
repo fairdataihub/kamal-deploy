@@ -97,25 +97,35 @@ To then install Kamal, run:
 gem install kamal
 ```
 
-To deploy the application, run:
+Ensure you have your SSH keys set up so that Kamal can access your server. You can create a new SSH key with:
+
+```bash
+ssh-keygen
+```
+Then, add the public key to your server's `~/.ssh/authorized_keys` file on the remote server.
+```bash
+# Copy the public key to the server
+ssh-copy-id user@your-server-ip
+```
+
+Now you can deploy the application, run:
 
 ```bash
 kamal setup
 ```
+This will set up the necessary tools on your server such as Docker and the Kamal Proxy and then begin the deployment process. Any other provisioning steps will need to be handled manually.
 
-To access an accessory such as the database or backups, you can use:
-
+We've created Kamal aliases to make it easier to access and manage the containers. Below are some useful commands:
 ```bash
 # Example to manually run a backup script
-kamal accessory exec <accessory_name> --interactive --reuse "sh ./backup.sh"
+kamal backup-db
 
 # To access the database shell with bash
-kamal accessory exec <accessory_name> --interactive --reuse "bash"
-```
+kamal db-shell
 
-To access the web app's shell, you can use:
-```bash
-kamal app exec --interactive --reuse "sh"
+# To access the web app's shell, you can use:
+kamal web-shell
 ```
+You can find all aliases checking the `aliases` key in the `config/deploy.yml` file.
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
