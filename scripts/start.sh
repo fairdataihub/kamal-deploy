@@ -1,4 +1,5 @@
 #!/bin/sh
+# Script to wait for the database to be ready and then run migrations before starting the application
 set -e
 
 echo "Waiting for database at ${DB_HOST}:5432..."

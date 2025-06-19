@@ -27,7 +27,6 @@ proxy:
   app_port: 3000
   forward_headers: true
   healthcheck:
-    path: /up
     timeout: 60
 
 # Credentials for your image host.
@@ -47,7 +46,7 @@ builder:
   # args:
   #   RUBY_VERSION: <%= ENV["RBENV_VERSION"] || ENV["rvm_ruby_string"] || "#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}" %>
 
-# Inject ENV variables into containers (secrets come from .kamal/secrets).
+# Inject ENV variables into all containers (secrets come from .kamal/secrets).
 env:
   clear:
     NODE_ENV: test
@@ -90,13 +89,12 @@ accessories:
     host: <%= ENV["KAMAL_SERVER_IP"] %>
 
     directories:
-      - /data:/var/lib/postgresql/data
+      - /data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts
     env:
       secret:
         - POSTGRES_DB
         - POSTGRES_USER
         - POSTGRES_PASSWORD
-
   # redis:
   #   image: valkey/valkey:8
   #   host: 192.168.0.2
@@ -106,15 +104,13 @@ accessories:
   db-backup:
     image: eeshugerman/postgres-backup-s3:16
     roles:
-      - web
+      - web # Deploys to all servers in the web role
 
-    # Import the backup script from the host to the container
     files:
-      - scripts/backup.sh:/backup.sh
+      - scripts/backup.sh:/backup.sh # Import the backup script from the host to the container
     
-    # import ssl certificates from the host to the container
     directories:
-      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - /etc/ssl/certs:/etc/ssl/certs:ro # import ssl certificates from the host to the container
 
     env:
       clear:
@@ -124,8 +120,6 @@ accessories:
         # TODO MOVE CLEAR TO SECRET TO HIDE THESE VALUES IN GIT ACTION LOGS
         # S3 / R2 configuration
         S3_REGION:            auto  # replace auto with DEFAULT_REGION env variable if needed (set to auto for R2)
-        S3_ACCESS_KEY_ID:     <%= ENV["ACCESS_KEY_ID"] %>
-        S3_SECRET_ACCESS_KEY: <%= ENV["SECRET_ACCESS_KEY"] %>
         S3_BUCKET:            <%= ENV["BUCKET"] %>
         S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>
         S3_PREFIX:            <%= ENV["S3_PREFIX"] %>
@@ -133,7 +127,9 @@ accessories:
         # Point at your Kamal Postgres accessory
         POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
         POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
-        POSTGRES_USER:     <%= ENV["POSTGRES_USER"] %>
       secret:
+        - POSTGRES_USER
+        - S3_SECRET_ACCESS_KEY
+        - S3_ACCESS_KEY_ID
         - POSTGRES_PASSWORD
         - PASSPHRASE        # only if you want GPG‐encrypted dumps
