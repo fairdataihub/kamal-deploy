@@ -76,8 +76,8 @@ aliases:
   web-shell: app exec --interactive --reuse "sh"  # Access shell in web container
   db-shell: accessory exec db --interactive --reuse "bash"  # Access PostgreSQL shell
   db-backup-shell: accessory exec db-backup --interactive --reuse "sh"  # Access backup container shell
-  backup-db: accessory db-backup exec --interactive "sh ./backup.sh"  # Run database backup
-  restore-db: accessory db-backup exec --interactive "sh ./restore.sh"  # Restore database from backup
+  backup-db: accessory exec db-backup --interactive "sh ./backup.sh"  # Run database backup
+  restore-db: accessory exec db-backup --interactive "sh ./restore.sh"  # Restore database from backup
 
 # Use a different ssh user than root
 # Uncomment and configure if you need to use a non-root user for SSH access
