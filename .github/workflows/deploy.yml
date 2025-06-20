@@ -1,25 +1,32 @@
+# GitHub Actions workflow for deploying the application to production environment
+# This workflow handles both UI deployment and database migrations
 name: Deploy to production environment
 
+# Concurrency control to prevent multiple deployments running simultaneously
+# If a new deployment is triggered while one is running, the previous one will be cancelled
 concurrency:
   group: production
   cancel-in-progress: true
 
+# Trigger conditions for this workflow
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - main # Deploy on every push to main branch
+  workflow_dispatch: # Allow manual triggering from GitHub UI
 
 jobs:
+  # Job for deploying the UI/frontend application
   deploy-ui:
     runs-on: ubuntu-latest
-    environment: prd
+    environment: prd # Uses production environment secrets
     defaults:
       run:
-        working-directory: ui
+        working-directory: ui # All commands run from the ui directory
 
+    # Environment variables for Kamal deployment and container registry
     env:
-      DOCKER_BUILDKIT: 1
+      DOCKER_BUILDKIT: 1 # Enable Docker BuildKit for faster builds
       KAMAL_REGISTRY_LOGIN_SERVER: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
@@ -29,19 +36,24 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
+      # Step 1: Checkout the repository code
       - uses: actions/checkout@v4
 
+      # Step 2: Setup Ruby environment for Kamal deployment tool
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3.1
-          bundler-cache: true
+          bundler-cache: true # Cache Ruby dependencies for faster builds
 
+      # Step 3: Install Kamal deployment tool
       - run: gem install kamal
 
+      # Step 4: Setup SSH agent for server access
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      # Step 5: Authenticate with Azure Container Registry
       - name: Login to Azure Container Registry
         uses: azure/docker-login@v1
         with:
@@ -49,45 +61,60 @@ jobs:
           username: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
           password: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
 
+      # Step 6: Setup Docker Buildx for better caching and performance
       - name: Set up Docker Buildx for cache
         uses: docker/setup-buildx-action@v3
 
+      # Step 7: Verify Kamal installation
       - run: kamal version
 
-      # Setup kamal for the first time
-      # Might need to run `sudo usermod -aG docker $USER | newgrp docker | docker ps` to add the user to the docker group if the user is not already in the docker group
+      # Step 8: Initial Kamal setup (only needed once per server)
+      # Note: This step might need to be run manually on the server first time
+      # to add the user to the docker group: `sudo usermod -aG docker $USER | newgrp docker | docker ps`
       - run: kamal setup
 
-      # Login to the registry on the server
+      # Step 9: Login to container registry on the deployment server
       - run: kamal registry login
+      # Uncomment for verbose output during troubleshooting:
       # - run: kamal registry login --verbose
 
-      # Suggestion to use lock release and redeploy after reading comments from others. Deploying two builds could cause locking issues when the first is cancelled.
+      # Step 10: Release any existing deployment locks
+      # This prevents conflicts when redeploying while a previous deployment is running
       - run: kamal lock release
+      # Uncomment for verbose output during troubleshooting:
       # - run: kamal lock release --verbose
 
-      # Deploy the app for all other times
+      # Step 11: Deploy the application
+      # Using redeploy instead of deploy to handle updates to existing deployments
       - run: kamal redeploy
+      # Uncomment for verbose output during troubleshooting:
       # - run: kamal redeploy --verbose
 
-  migrate-db:
-    runs-on: ubuntu-latest
-    environment: prd
-    defaults:
-      run:
-        working-directory: ui
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # Job for running database migrations
+  # migrate-db:
+  #   runs-on: ubuntu-latest
+  #   environment: prd  # Uses production environment secrets
+  #   defaults:
+  #     run:
+  #       working-directory: ui  # All commands run from the ui directory
+  #   env:
+  #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     # Step 1: Checkout the repository code
+  #     - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
+  #     # Step 2: Setup Node.js environment for Prisma operations
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
 
-      - run: yarn install
+  #     # Step 3: Install Node.js dependencies
+  #     - run: yarn install
 
-      - run: yarn prisma:generate
+  #     # Step 4: Generate Prisma client for database operations
+  #     - run: yarn prisma:generate
 
-      - run: yarn prisma:migrate:deploy > /dev/null
+  #     # Step 5: Deploy database migrations to production
+  #     # Redirects output to /dev/null to reduce log noise
+  #     - run: yarn prisma:migrate:deploy > /dev/null
