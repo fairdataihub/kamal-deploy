@@ -123,7 +123,7 @@ accessories:
         # TODO MOVE CLEAR TO SECRET TO HIDE THESE VALUES IN GIT ACTION LOGS
         # S3 / R2 configuration
         S3_REGION:            auto  # replace auto with DEFAULT_REGION env variable if needed (set to auto for R2)
-        S3_BUCKET:            <%= ENV["BUCKET"] %>
+        S3_BUCKET:            <%= ENV["S3_BUCKET"] %>
         S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>
         S3_PREFIX:            <%= ENV["S3_PREFIX"] %>
 
