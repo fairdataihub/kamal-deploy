@@ -20,9 +20,6 @@ jobs:
   deploy-ui:
     runs-on: ubuntu-latest
     environment: prd # Uses production environment secrets
-    defaults:
-      run:
-        working-directory: ui # All commands run from the ui directory
 
     # Environment variables for Kamal deployment and container registry
     env:
