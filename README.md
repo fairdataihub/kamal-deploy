@@ -1,131 +1,335 @@
 # Kamal Deploy Test
 
-This repository has been created to test using Kamal as a deployment tool for a Nuxt 3 app. This includes a local postgres database and a docker container for the server. Backups are also included.
+This repository demonstrates deploying a Nuxt 3 application using Kamal as a deployment tool. The setup includes a local PostgreSQL database, Docker containerization, automated backups to S3/R2, and SSL certificate management.
 
-Look at [Nuxt docs](https://nuxt.com/docs/getting-started/introduction) and [Nuxt UI docs](https://ui.nuxt.com) to learn more.
+## 🚀 Features
 
-## Setup
+- **Nuxt 3** - Modern Vue.js framework
+- **Kamal** - Zero-downtime deployment orchestration
+- **PostgreSQL** - Relational database with Prisma ORM
+- **Docker** - Containerized application deployment
+- **Automated Backups** - S3/R2 cloud storage integration
+- **SSL/TLS** - Automatic certificate management
+- **Health Checks** - Application monitoring
 
-Make sure to install the dependencies:
+## 📋 Prerequisites
+
+Before deploying, ensure you have:
+
+- **Ruby** (for Kamal)
+- **Docker** (on your server)
+- **SSH access** to your deployment server
+- **S3/R2 bucket** for database backups
+- **Domain name** (for SSL certificates)
+
+## 🛠️ Local Development
+
+### Installation
 
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
+# Install dependencies
 yarn install
 
-# bun
-bun install
+# Generate Prisma client
+yarn prisma:generate
 ```
 
-## Development Server
+### Development Server
 
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
 yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+### Database Setup
 
 ```bash
-# npm
-npm run build
+# Run database migrations
+yarn prisma:migrate:dev
 
-# pnpm
-pnpm run build
+# Open Prisma Studio (database GUI)
+yarn prisma:studio
+```
 
-# yarn
+### Building for Production
+
+```bash
+# Build the application
 yarn build
 
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
+# Preview production build locally
 yarn preview
-
-# bun
-bun run preview
 ```
 
+## 🚀 Deployment Setup
 
-## Deployment
+### 1. Install Kamal
 
 We use Kamal for orchestrating deployments. To use Kamal you will need to install Ruby onto your machine. Although possible to install on Windows, we recommend using linux or Windows Subsystem for Linux (WSL) for the best experience.
 
 To install Ruby:
+
 ```bash
 # Ubuntu/Debian
 sudo apt install ruby-full
+
 # Fedora
 sudo dnf install ruby
+
 # macOS
 brew install ruby
-# Windows (WSL)
-sudo apt install ruby-full
-```
 
-To then install Kamal, run:
-
-```bash
+# Install Kamal
 gem install kamal
 ```
 
-Ensure you have your SSH keys set up so that Kamal can access your server. You can create a new SSH key with:
+### 2. Environment Configuration
+
+Create a `.env` file in the root directory with the following variables:
 
 ```bash
+# Application Configuration
+KAMAL_APP_NAME=your-app-name
+KAMAL_SERVER_IP=your-server-ip
+KAMAL_APP_DOMAIN=your-domain.com
+
+# Docker Registry (Docker Hub example)
+KAMAL_REGISTRY_LOGIN_SERVER=docker.io
+KAMAL_REGISTRY_USERNAME=your-dockerhub-username
+
+# Database Configuration
+DATABASE_URL=postgresql://username:password@host:5432/database
+DB_HOST=your-server-ip
+POSTGRES_DB=your-database-name
+POSTGRES_USER=your-database-user
+
+# S3/R2 Backup Configuration
+S3_BUCKET=your-backup-bucket
+S3_ENDPOINT=https://your-s3-endpoint
+S3_PREFIX=backups/your-app
+```
+
+### 3. Configure Secrets
+
+Set up Kamal secrets for sensitive data:
+
+```bash
+# Registry password
+kamal secrets set KAMAL_REGISTRY_PASSWORD your-dockerhub-password
+
+# Database credentials
+kamal secrets set POSTGRES_PASSWORD your-database-password
+kamal secrets set POSTGRES_USER your-database-user
+
+# S3/R2 credentials
+kamal secrets set S3_ACCESS_KEY_ID your-access-key
+kamal secrets set S3_SECRET_ACCESS_KEY your-secret-key
+
+# Optional: GPG encryption for backups
+kamal secrets set PASSPHRASE your-backup-encryption-key
+```
+
+### 4. SSH Setup
+
+Ensure SSH access to your server:
+
+```bash
+# Generate SSH key if needed
 ssh-keygen
-```
-Then, add the public key to your server's `~/.ssh/authorized_keys` file on the remote server.
-```bash
-# Copy the public key to the server
-ssh-copy-id user@your-server-ip
+
+# Copy public key to server
+ssh-copy-id dev@your-server-ip
 ```
 
-Now you can deploy the application, run:
+### 5. Deploy
 
 ```bash
+# Initial setup and deployment
 kamal setup
 ```
-This will set up the necessary tools on your server such as Docker and the Kamal Proxy and then begin the deployment process. Any other provisioning steps will need to be handled manually.
 
-We've created Kamal aliases to make it easier to access and manage the containers. Below are some useful commands:
+This command will:
+
+- Install Docker and Kamal on your server
+- Build and deploy your application
+- Set up PostgreSQL database
+- Configure SSL certificates
+- Start the backup service
+
+## 🔧 Management Commands
+
+### Application Management
+
 ```bash
-# Example to manually run a backup script
-kamal backup-db
+# Deploy updates
+kamal deploy
 
-# To access the database shell with bash
+# View application logs
+kamal app logs
+
+# Access application shell
+kamal web-shell
+
+# Restart application
+kamal restart
+```
+
+### Database Management
+
+```bash
+# Access database shell
 kamal db-shell
 
-# To access the web app's shell, you can use:
-kamal web-shell
-```
-You can find all aliases checking the `aliases` key in the `config/deploy.yml` file.
+# Run database backup
+kamal backup-db
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+# Restore database from backup
+kamal restore-db
+
+# Access backup container shell
+kamal db-backup-shell
+```
+
+### Monitoring
+
+```bash
+# Check application status
+kamal status
+
+# View all container logs
+kamal logs
+
+# Monitor resource usage
+kamal monitor
+```
+
+## 📊 Database Schema
+
+The application uses PostgreSQL with the following schema:
+
+```prisma
+model Ping {
+    id String @id
+    username String
+    location String
+    plusOneCount Int @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+```
+
+## 🔄 Backup System
+
+The application includes automated database backups:
+
+- **Schedule**: Hourly backups (configurable)
+- **Storage**: S3/R2 cloud storage
+- **Encryption**: Optional GPG encryption
+- **Retention**: Configurable retention policy (default: 1 day)
+- **Format**: PostgreSQL custom format for efficient storage
+
+### Backup Configuration
+
+Backup settings can be modified in `config/deploy.yml`:
+
+```yaml
+env:
+  clear:
+    SCHEDULE: "@hourly" # Cron-like schedule
+    BACKUP_KEEP_DAYS: "1" # Retention period
+    S3_BUCKET: "your-bucket" # Storage bucket
+    S3_PREFIX: "backups/app" # File prefix
+```
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Kamal Proxy   │    │  Nuxt App       │    │  PostgreSQL     │
+│   (SSL/TLS)     │◄──►│  (Port 3000)    │◄──►│  (Port 5432)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Domain        │    │   Docker        │    │   Backup        │
+│   (your-app.com)│    │   Container     │    │   Service       │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+## 🔒 Security
+
+- **SSL/TLS**: Automatic certificate management via Let's Encrypt
+- **Secrets**: Sensitive data stored in Kamal secrets
+- **Encryption**: Optional GPG encryption for database backups
+- **SSH**: Secure server access with key-based authentication
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Database Connection Failed**
+
+   ```bash
+   # Check database status
+   kamal accessory exec db "pg_isready"
+
+   # View database logs
+   kamal accessory logs db
+   ```
+
+2. **SSL Certificate Issues**
+
+   ```bash
+   # Check proxy status
+   kamal proxy status
+
+   # View proxy logs
+   kamal proxy logs
+   ```
+
+3. **Backup Failures**
+
+   ```bash
+   # Check backup service logs
+   kamal accessory logs db-backup
+
+   # Test backup manually
+   kamal backup-db
+   ```
+
+### Logs and Debugging
+
+```bash
+# View all logs
+kamal logs
+
+# Follow logs in real-time
+kamal logs -f
+
+# View specific service logs
+kamal app logs
+kamal accessory logs db
+kamal accessory logs db-backup
+```
+
+## 📚 Additional Resources
+
+- [Nuxt 3 Documentation](https://nuxt.com/docs/getting-started/introduction)
+- [Nuxt UI Documentation](https://ui.nuxt.com)
+- [Kamal Documentation](https://kamal-deploy.org)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
