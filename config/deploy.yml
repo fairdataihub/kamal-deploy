@@ -4,7 +4,7 @@
 
 # Name of your application. Used to uniquely configure containers.
 # This name will be used for container names, volumes, and network resources
-service: nuxt-app
+service: <%= ENV["KAMAL_APP_NAME"] %>
 
 # Load environment variables from .env file for dynamic configuration
 # This allows sensitive data to be kept out of version control
@@ -13,7 +13,7 @@ service: nuxt-app
 
 # Name of the container image.
 # This should match your Docker registry and image name
-image: <%= ENV["KAMAL_REGISTRY_USERNAME"] %>/nuxt-app
+image: <%= ENV["KAMAL_APP_NAME"] %>
 
 # Deploy to these servers.
 # Define different server roles for your application
