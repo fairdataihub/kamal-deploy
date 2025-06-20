@@ -154,8 +154,8 @@ accessories:
         POSTGRES_HOST:     <%= ENV["DB_HOST"] %>           # Database host
         POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>       # Database name
       secret:
-        - POSTGRES_USER           # Database username
-        - S3_SECRET_ACCESS_KEY    # S3/R2 secret access key
         - S3_ACCESS_KEY_ID        # S3/R2 access key ID
+        - S3_SECRET_ACCESS_KEY    # S3/R2 secret access key
+        - POSTGRES_USER           # Database username
         - POSTGRES_PASSWORD       # Database password
         - PASSPHRASE              # only if you want GPG‐encrypted dumps

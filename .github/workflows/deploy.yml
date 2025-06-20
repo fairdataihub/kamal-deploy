@@ -12,21 +12,21 @@ concurrency:
 on:
   push:
     branches:
-      - main  # Deploy on every push to main branch
-  workflow_dispatch:  # Allow manual triggering from GitHub UI
+      - main # Deploy on every push to main branch
+  workflow_dispatch: # Allow manual triggering from GitHub UI
 
 jobs:
   # Job for deploying the UI/frontend application
   deploy-ui:
     runs-on: ubuntu-latest
-    environment: prd  # Uses production environment secrets
+    environment: prd # Uses production environment secrets
     defaults:
       run:
-        working-directory: ui  # All commands run from the ui directory
+        working-directory: ui # All commands run from the ui directory
 
     # Environment variables for Kamal deployment and container registry
     env:
-      DOCKER_BUILDKIT: 1  # Enable Docker BuildKit for faster builds
+      DOCKER_BUILDKIT: 1 # Enable Docker BuildKit for faster builds
       KAMAL_REGISTRY_LOGIN_SERVER: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
       KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
@@ -43,7 +43,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 3.3.1
-          bundler-cache: true  # Cache Ruby dependencies for faster builds
+          bundler-cache: true # Cache Ruby dependencies for faster builds
 
       # Step 3: Install Kamal deployment tool
       - run: gem install kamal
@@ -91,30 +91,30 @@ jobs:
       # - run: kamal redeploy --verbose
 
   # Job for running database migrations
-  migrate-db:
-    runs-on: ubuntu-latest
-    environment: prd  # Uses production environment secrets
-    defaults:
-      run:
-        working-directory: ui  # All commands run from the ui directory
-    env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  # migrate-db:
+  #   runs-on: ubuntu-latest
+  #   environment: prd  # Uses production environment secrets
+  #   defaults:
+  #     run:
+  #       working-directory: ui  # All commands run from the ui directory
+  #   env:
+  #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-    steps:
-      # Step 1: Checkout the repository code
-      - uses: actions/checkout@v3
+  #   steps:
+  #     # Step 1: Checkout the repository code
+  #     - uses: actions/checkout@v3
 
-      # Step 2: Setup Node.js environment for Prisma operations
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
+  #     # Step 2: Setup Node.js environment for Prisma operations
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 20
 
-      # Step 3: Install Node.js dependencies
-      - run: yarn install
+  #     # Step 3: Install Node.js dependencies
+  #     - run: yarn install
 
-      # Step 4: Generate Prisma client for database operations
-      - run: yarn prisma:generate
+  #     # Step 4: Generate Prisma client for database operations
+  #     - run: yarn prisma:generate
 
-      # Step 5: Deploy database migrations to production
-      # Redirects output to /dev/null to reduce log noise
-      - run: yarn prisma:migrate:deploy > /dev/null
+  #     # Step 5: Deploy database migrations to production
+  #     # Redirects output to /dev/null to reduce log noise
+  #     - run: yarn prisma:migrate:deploy > /dev/null

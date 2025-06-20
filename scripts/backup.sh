@@ -46,7 +46,7 @@ else
 fi
 
 # Enable debug output to show commands being executed
-set -x # Remove this line to disable debug output
+# set -x # Remove this line to disable debug output
 
 echo "Uploading backup to $S3_BUCKET..."
 
