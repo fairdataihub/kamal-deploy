@@ -12,8 +12,16 @@ echo "Waiting for database at ${DB_HOST}:5432..."
 # Wait for the PostgreSQL database to be available on port 5432
 # nc (netcat) is used to test if the port is open and accepting connections
 # This prevents the application from starting before the database is ready
+MAX_RETRIES=30
+RETRY_COUNT=0
+
 until nc -z "${DB_HOST}" 5432; do
-  echo "  waiting… sleeping 2s"
+  RETRY_COUNT=$((RETRY_COUNT+1))
+  if [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+    echo "Error: Database at ${DB_HOST}:5432 did not become available after $((MAX_RETRIES * 2)) seconds."
+    exit 1
+  fi
+  echo "  waiting… sleeping 2s (attempt ${RETRY_COUNT}/${MAX_RETRIES})"
   sleep 2
 done
 
