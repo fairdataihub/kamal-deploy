@@ -114,7 +114,7 @@ accessories:
     host: <%= ENV["KAMAL_SERVER_IP"] %>  # Host where database runs
 
     directories:
-      - /data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts (auto creates host directory if it doesn't exist)
+      - data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts (auto creates host directory if it doesn't exist)
     env:
       secret:
         - POSTGRES_DB       # Database name
