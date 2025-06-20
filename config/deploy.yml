@@ -140,26 +140,21 @@ accessories:
 
     env:
       clear:
-        SCHEDULE:       "@hourly"  # Cron-like schedule for backups (every hour)
-        BACKUP_KEEP_DAYS: "1"      # Keep backups for 1 day
+        SCHEDULE:       "@hourly"
+        BACKUP_KEEP_DAYS: "1"
 
-        # TODO MOVE CLEAR TO SECRET TO HIDE THESE VALUES IN GIT ACTION LOGS
         # S3 / R2 configuration
-        S3_REGION:            auto  # replace auto with S3_DEFAULT_REGION env variable if needed (set to auto for R2)
-        S3_BUCKET:            <%= ENV["S3_BUCKET"] %>      # S3/R2 bucket name
-        S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>    # S3/R2 endpoint URL
-        S3_PREFIX:            <%= ENV["S3_PREFIX"] %>      # Prefix for backup files in bucket
-
-        S3_ACCESS_KEY_ID:      <%= ENV["S3_ACCESS_KEY_ID"] %>     # S3/R2 access key ID
-        S3_SECRET_ACCESS_KEY:  <%= ENV["S3_SECRET_ACCESS_KEY"] %> # S3/R2 secret access key
-
-        PASSPHRASE:           <%= ENV["PASSPHRASE"] %> # only if you want GPG‐encrypted dumps
+        S3_REGION:            auto  # replace auto with DEFAULT_REGION env variable if needed (set to auto for R2)
+        S3_BUCKET:            <%= ENV["BUCKET"] %>
+        S3_ENDPOINT:          <%= ENV["S3_ENDPOINT"] %>
+        S3_PREFIX:            <%= ENV["S3_PREFIX"] %>
 
         # Point at your Kamal Postgres accessory
-        POSTGRES_HOST:     <%= ENV["DB_HOST"] %>            # Database host
-        POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>        # Database name
-        POSTGRES_USER:      <%= ENV["POSTGRES_USER"] %>     # Database user
-        POSTGRES_PASSWORD:  <%= ENV["POSTGRES_PASSWORD"] %> # Database password
-
-
-  
+        POSTGRES_HOST:     <%= ENV["DB_HOST"] %>
+        POSTGRES_DATABASE: <%= ENV["POSTGRES_DB"] %>
+      secret:
+        - POSTGRES_USER
+        - S3_SECRET_ACCESS_KEY
+        - S3_ACCESS_KEY_ID
+        - POSTGRES_PASSWORD
+        - PASSPHRASE        # only if you want GPG‐encrypted dumps
