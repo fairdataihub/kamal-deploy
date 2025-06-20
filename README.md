@@ -180,6 +180,15 @@ kamal restore-db
 kamal db-backup-shell
 ```
 
+### Accessory Management
+
+When accessories have been deployed and changes to the environment variables are made, you will need to reboot the accessory to apply the changes:
+
+```bash
+# Reboot accessory
+kamal accessory reboot <accessory-name>
+```
+
 ### Monitoring
 
 ```bash
