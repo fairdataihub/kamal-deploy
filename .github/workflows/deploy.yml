@@ -79,7 +79,7 @@ jobs:
       # Step 8: Initial Kamal setup (only needed once per server)
       # Note: This step might need to be run manually on the server first time
       # to add the user to the docker group: `sudo usermod -aG docker $USER | newgrp docker | docker ps`
-      - run: kamal setup
+      # - run: kamal setup
 
       # Step 9: Login to container registry on the deployment server
       - run: kamal registry login

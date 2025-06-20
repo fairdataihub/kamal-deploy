@@ -8,8 +8,8 @@ service: <%= ENV["KAMAL_APP_NAME"] %>
 
 # Load environment variables from .env file for dynamic configuration
 # This allows sensitive data to be kept out of version control
-<% require "dotenv" %>
-<% Dotenv.load(".env") %>
+# <% require "dotenv" %>
+# <% Dotenv.load(".env") %>
 
 # Name of the container image.
 # This should match your Docker registry and image name
