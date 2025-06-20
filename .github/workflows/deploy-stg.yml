@@ -5,7 +5,7 @@ name: Deploy to staging environment
 # Concurrency control to prevent multiple deployments running simultaneously
 # If a new deployment is triggered while one is running, the previous one will be cancelled
 concurrency:
-  group: staging
+  group: staging-app-deploy
   cancel-in-progress: true
 
 # Trigger conditions for this workflow

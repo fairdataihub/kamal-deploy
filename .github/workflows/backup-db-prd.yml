@@ -1,11 +1,11 @@
 # GitHub Actions workflow for deploying the application to production environment
 # This workflow handles both UI deployment and database migrations
-name: Backup Database to storage container
+name: Backup database
 
 # Concurrency control to prevent multiple deployments running simultaneously
 # If a new deployment is triggered while one is running, the previous one will be cancelled
 concurrency:
-  group: production
+  group: production-db-backup
   cancel-in-progress: true
 
 # Trigger conditions for this workflow
