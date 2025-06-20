@@ -97,40 +97,28 @@ KAMAL_APP_DOMAIN=your-domain.com
 # Docker Registry (Docker Hub example)
 KAMAL_REGISTRY_LOGIN_SERVER=docker.io
 KAMAL_REGISTRY_USERNAME=your-dockerhub-username
+KAMAL_REGISTRY_PASSWORD=your-dockerhub-password
 
 # Database Configuration
 DATABASE_URL=postgresql://username:password@host:5432/database
 DB_HOST=your-server-ip
 POSTGRES_DB=your-database-name
 POSTGRES_USER=your-database-user
+POSTGRES_PASSWORD=your-database-password
 
 # S3/R2 Backup Configuration
 S3_BUCKET=your-backup-bucket
 S3_ENDPOINT=https://your-s3-endpoint
 S3_PREFIX=backups/your-app
 ```
-
-### 3. Configure Secrets
-
-Set up Kamal secrets for sensitive data:
+Kamal will extract these variables into `.kamal/secrets` during deployment. To view your secrets are stored, you can run:
 
 ```bash
-# Registry password
-kamal secrets set KAMAL_REGISTRY_PASSWORD your-dockerhub-password
-
-# Database credentials
-kamal secrets set POSTGRES_PASSWORD your-database-password
-kamal secrets set POSTGRES_USER your-database-user
-
-# S3/R2 credentials
-kamal secrets set S3_ACCESS_KEY_ID your-access-key
-kamal secrets set S3_SECRET_ACCESS_KEY your-secret-key
-
-# Optional: GPG encryption for backups
-kamal secrets set PASSPHRASE your-backup-encryption-key
+source .env
+kamal secrets print
 ```
 
-### 4. SSH Setup
+### 3. SSH Setup
 
 Ensure SSH access to your server:
 
@@ -142,7 +130,7 @@ ssh-keygen
 ssh-copy-id dev@your-server-ip
 ```
 
-### 5. Deploy
+### 4. Deploy
 
 ```bash
 # Initial setup and deployment
@@ -152,9 +140,10 @@ kamal setup
 This command will:
 
 - Install Docker and Kamal on your server
+- Create the Kamal Proxy as a Docker container
 - Build and deploy your application
 - Set up PostgreSQL database
-- Configure SSL certificates
+- Configure SSL certificates with Let's Encrypt
 - Start the backup service
 
 ## 🔧 Management Commands
@@ -244,18 +233,19 @@ env:
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Kamal Proxy   │    │  Nuxt App       │    │  PostgreSQL     │
-│   (SSL/TLS)     │◄──►│  (Port 3000)    │◄──►│  (Port 5432)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Domain        │    │   Docker        │    │   Backup        │
-│   (your-app.com)│    │   Container     │    │   Service       │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+```mermaid
+flowchart LR
+  Domain["Domain (your-app.com)"] --> Proxy["Kamal Proxy<br/>(SSL/TLS)"]
+  subgraph Bridge["Docker Network: Kamal"]
+    direction TB
+    NuxtApp["Nuxt App<br/>(Port 3000)"]
+    Postgres["PostgreSQL<br/>(Port 5432)"]
+    Backup["Backup Service (Accessory)"]
+  end
+  Proxy --> NuxtApp
+  NuxtApp --> Postgres
+  Backup --> Postgres
+  Backup --> Storage["R2/S3 Storage<br/>(backups)"]
 ```
 
 ## 🔒 Security
