@@ -112,6 +112,7 @@ accessories:
   db:
     image: postgres:16  # PostgreSQL version 16
     host: <%= ENV["KAMAL_SERVER_IP"] %>  # Host where database runs
+    port: <%= ENV["KAMAL_DB_PORT_MAPPING"] %>
 
     directories:
       - data:/var/lib/postgresql/data  # Persistent storage for Postgres data across container restarts (auto creates host directory if it doesn't exist)

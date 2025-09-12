@@ -94,6 +94,8 @@ KAMAL_APP_NAME=your-app-name
 KAMAL_SERVER_IP=your-server-ip
 KAMAL_APP_DOMAIN=your-domain.com
 
+KAMAL_DB_PORT_MAPPING=your-host-db-port
+
 # Docker Registry (Docker Hub example)
 KAMAL_REGISTRY_LOGIN_SERVER=docker.io
 KAMAL_REGISTRY_USERNAME=your-dockerhub-username
@@ -111,6 +113,7 @@ S3_BUCKET=your-backup-bucket
 S3_ENDPOINT=https://your-s3-endpoint
 S3_PREFIX=backups/your-app
 ```
+
 Kamal will extract these variables into `.kamal/secrets` during deployment. To view your secrets are stored, you can run:
 
 ```bash
