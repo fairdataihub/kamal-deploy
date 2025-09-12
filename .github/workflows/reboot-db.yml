@@ -1,0 +1,66 @@
+# GitHub Actions workflow for deploying the application to production environment
+# This workflow handles both UI deployment and database migrations
+name: Reboot database
+
+# Concurrency control to prevent multiple deployments running simultaneously
+# If a new deployment is triggered while one is running, the previous one will be cancelled
+concurrency:
+  group: production-db-reboot
+  cancel-in-progress: true
+
+# Trigger conditions for this workflow
+on:
+  workflow_dispatch: # Allow manual triggering from GitHub UI
+
+jobs:
+  # Job for deploying the UI/frontend application
+  reboot-db:
+    runs-on: ubuntu-latest
+    environment: prd # Uses production environment secrets
+
+    # Environment variables for Kamal deployment and container registry
+    env:
+      DOCKER_BUILDKIT: 1 # Enable Docker BuildKit for faster builds
+      KAMAL_REGISTRY_LOGIN_SERVER: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
+      KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+      KAMAL_SERVER_IP: ${{ secrets.KAMAL_SERVER_IP }}
+      KAMAL_DB_PORT_MAPPING: ${{ secrets.KAMAL_DB_PORT_MAPPING }}
+      KAMAL_APP_DOMAIN: ${{ secrets.KAMAL_APP_DOMAIN }}
+      KAMAL_APP_NAME: ${{ secrets.KAMAL_APP_NAME }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+      S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      S3_ENDPOINT: ${{ secrets.S3_ENDPOINT }}
+      S3_PREFIX: ${{ secrets.S3_PREFIX }}
+      S3_DEFAULT_REGION: ${{ secrets.S3_DEFAULT_REGION }}
+      PASSPHRASE: ${{ secrets.PASSPHRASE }}
+
+    steps:
+      # Step 1: Checkout the repository code
+      - uses: actions/checkout@v4
+
+      # Step 2: Setup Ruby environment for Kamal deployment tool
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.3.1
+          bundler-cache: true # Cache Ruby dependencies for faster builds
+
+      # Step 3: Install Kamal deployment tool
+      - run: gem install kamal
+
+      # Step 4: Setup SSH agent for server access
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Step 5: Verify Kamal installation
+      - run: kamal version
+
+      # Step 6: Reboot the database
+      - run: kamal accessory reboot db
