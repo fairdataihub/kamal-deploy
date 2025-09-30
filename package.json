@@ -18,13 +18,13 @@
     "prisma:studio": "prisma studio",
     "prisma:db:push": "prisma db push",
     "prisma:db:pull": "prisma db pull",
-    "reset": "rm -rf node_modules && rm -rf .nuxt && rm -rf .output && rm -rf dist && yarn install",
+    "reset": "rimraf node_modules && rimraf .nuxt && rimraf .output && rimraf dist && yarn install",
     "prune-branches": "git removed-branches --prune --force"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.38",
     "@iconify-json/simple-icons": "^1.2.33",
-    "@nuxt/ui": "^3.0.2",
+    "@nuxt/ui": "^4.0.0",
     "nanoid": "^5.1.5",
     "nuxt": "^3.16.2",
     "unique-username-generator": "^1.4.0"
@@ -48,11 +48,12 @@
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "^6.6.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
     "zod": "^3.24.3"
   },
   "volta": {
-    "node": "20.18.1",
+    "node": "22.20.0",
     "yarn": "1.22.22"
   }
 }
