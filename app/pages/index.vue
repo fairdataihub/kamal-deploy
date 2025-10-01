@@ -130,8 +130,10 @@ const deletePing = async (pingId: string) => {
       <div class="flex flex-col items-center gap-4">
         <div class="flex items-center gap-2">
           <UIcon name="heroicons-outline:user-add" size="2xl" />
+
           <span class="text-lg text-slate-500">No Pings</span>
         </div>
+
         <p class="text-lg text-slate-500">Add a ping to get started</p>
       </div>
     </div>
@@ -145,15 +147,21 @@ const deletePing = async (pingId: string) => {
         >
           <div class="flex items-center gap-2">
             <UIcon name="lucide:user-circle" size="2xl" />
+
             <span class="text-lg text-slate-500">{{ ping.username }}</span>
+
             <span class="text-xs text-slate-500">
               <ClientOnly>
                 ({{ $dayjs(ping.createdAt).fromNow() }})
               </ClientOnly>
             </span>
           </div>
+
           <div class="flex items-center gap-2">
-            <p class="text-lg text-slate-500">{{ ping.location }}</p>
+            <p class="text-lg text-slate-500">
+              {{ ping.location }}
+            </p>
+
             <UButton
               variant="outline"
               color="neutral"
@@ -163,6 +171,7 @@ const deletePing = async (pingId: string) => {
               @click="plusOne(ping.id)"
             >
               <USeparator orientation="vertical" class="h-4 px-1" />
+
               <span class="text-sm text-slate-500">{{
                 ping.plusOneCount
               }}</span>
