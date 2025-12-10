@@ -37,7 +37,9 @@ proxy:
   app_port: 3000  # Port your Nuxt app runs on inside the container
   forward_headers: true  # Forward client headers to your application
   healthcheck:
-    timeout: 60  # Health check timeout in seconds
+    path: /up # Default is /up, change if your app uses a different health check endpoint
+    interval: 10  # Interval between health checks in seconds 
+    timeout: 10  # Health check timeout in seconds
 
 # Credentials for your image host.
 # Configure access to your Docker registry (Docker Hub, GitHub Container Registry, etc.)
