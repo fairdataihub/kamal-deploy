@@ -62,6 +62,53 @@ yarn build
 yarn preview
 ```
 
+## 📊 Docker Benchmark
+
+This repository includes a comprehensive benchmarking system to compare Dockerfile optimizations. The benchmark measures build times, image sizes, and layer caching effectiveness.
+
+### Running Benchmarks
+
+```bash
+# Run all scenarios (takes ~10-20 minutes)
+./scripts/benchmark-docker.sh
+
+# Quick test (skip clean build)
+./scripts/benchmark-docker.sh --skip-clean
+
+# JSON output only
+./scripts/benchmark-docker.sh --json-only
+```
+
+### Benchmark Scenarios
+
+1. **Clean Build**: Measures build time and image size with no cache (worst-case scenario)
+2. **Code Change**: Tests cache effectiveness after modifying a Vue component
+3. **Dependency Change**: Tests cache effectiveness after modifying package.json
+
+### Understanding Results
+
+- **Build Time**: Wall-clock seconds for Docker build
+- **Image Size**: Final production image size
+- **Cache Hits**: Number of layers reused from cache (higher = better)
+- **Context Transfer**: Size of build context sent to Docker daemon (.dockerignore optimization)
+
+Results are saved to `benchmark-results/latest.json`
+
+### Optimizations Implemented
+
+The current Dockerfile uses a 4-stage multi-stage build:
+
+- **Base**: Shared foundation with minimal dependencies (Node 22-alpine, OpenSSL)
+- **Deps**: Dedicated dependency installation stage for better layer caching
+- **Build**: Prisma Client generation + Nuxt build
+- **Runner**: Lean production image with only runtime dependencies
+
+**Key improvements over the old 2-stage build:**
+- ✅ Separate dependency stage improves cache effectiveness
+- ✅ Node 22 (vs Node 20) for latest performance improvements
+- ✅ Optimized Prisma CLI installation (extracts version from yarn.lock)
+- ✅ .dockerignore reduces build context transfer by ~40-50%
+
 ## 🚀 Deployment Setup
 
 ### 1. Install Kamal

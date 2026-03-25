@@ -1,19 +1,20 @@
 # Kamal Deployment Configuration
-# This file configures how your Nuxt.js application is deployed using Kamal
-# Kamal is a deployment tool that automates containerized app deployment
+
+
+# Load environment variables from local .env file
+# Keep these commented out for CI/CD deployments
+# <% require "dotenv" %>
+# <% Dotenv.load(".env") %>
+
 
 # Name of your application. Used to uniquely configure containers.
 # This name will be used for container names, volumes, and network resources
 service: <%= ENV["KAMAL_APP_NAME"] %>
 
-# Load environment variables from .env file for dynamic configuration
-# This allows sensitive data to be kept out of version control
-# <% require "dotenv" %>
-# <% Dotenv.load(".env") %>
 
 # Name of the container image.
-# This should match your Docker registry and image name
-image: <%= ENV["KAMAL_APP_NAME"] %>
+# Expected format is either "username/repo" for Docker Hub
+image: <%= ENV["KAMAL_IMAGE_NAME"] %>
 
 # Deploy to these servers.
 # Define different server roles for your application
@@ -45,8 +46,7 @@ proxy:
 # Configure access to your Docker registry (Docker Hub, GitHub Container Registry, etc.)
 registry:
   # Specify the registry server, if you're not using Docker Hub
-  # server: registry.digitalocean.com / ghcr.io / ...
-  server: <%= ENV["KAMAL_REGISTRY_LOGIN_SERVER"] %>
+  # server: <%= ENV["KAMAL_REGISTRY_LOGIN_SERVER"] %>
   username: <%= ENV["KAMAL_REGISTRY_USERNAME"] %>
 
   # Always use an access token rather than real password (pulled from .kamal/secrets).
@@ -58,6 +58,14 @@ registry:
 # Settings for building your Docker image
 builder:
   arch: amd64  # Target architecture for the built image
+
+  # Docker Buildx cache configuration for faster builds
+  # This enables layer caching between CI runs using the container registry
+  cache:
+    type: registry
+    options: mode=max
+    image: <%= ENV["KAMAL_IMAGE_NAME"] %>-build-cache
+
   # Pass in additional build args needed for your Dockerfile.
   # args:
   #   RUBY_VERSION: <%= ENV["RBENV_VERSION"] || ENV["rvm_ruby_string"] || "#{RUBY_ENGINE}-#{RUBY_ENGINE_VERSION}" %>
@@ -144,7 +152,7 @@ accessories:
     env:
       clear:
         SCHEDULE:       "@hourly"
-        BACKUP_KEEP_DAYS: 1
+        BACKUP_KEEP_DAYS: 14
 
         # S3 / R2 configuration
         S3_REGION:            <%= ENV["S3_DEFAULT_REGION"] %>  # replace auto with DEFAULT_REGION env variable if needed (set to auto for R2)

@@ -1,50 +1,82 @@
-# Build stage
-FROM node:20-alpine AS builder
+# -------- Base --------
+# Base stage with minimal dependencies needed across build stages
+FROM node:22-alpine AS base
 
-# Use alpine-based image and install only necessary dependencies
+# Install OpenSSL (required by Prisma)
 RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Only needed for prisma build
-ARG DATABASE_URL
 
-# Copy only necessary files for dependency installation
+# -------- Dependencies --------
+# Separate stage for installing dependencies - improves layer caching
+FROM base AS deps
+
+# Copy only package files for dependency installation
 COPY package.json yarn.lock ./
-COPY prisma ./prisma/
 
-RUN yarn install --frozen-lockfile \
-  && yarn prisma:generate \
+# Install dependencies without running scripts (Prisma generate happens in build stage)
+# This prevents postinstall scripts from running before source code is available
+RUN yarn install --frozen-lockfile --ignore-scripts \
   && yarn cache clean
 
-# Copy source files and build
-COPY . .
-RUN yarn run build
 
-# Production stage
-FROM node:20-alpine
+# -------- Build --------
+# Build stage - generates Prisma Client and builds Nuxt application
+FROM base AS build
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source files
+COPY . .
+
+# Build-time argument for Prisma
+ARG DATABASE_URL
+
+# Generate Prisma Client and build Nuxt application
+RUN yarn prisma:generate \
+  && yarn run build
+
+
+# -------- Runtime --------
+# Lean production image with only runtime dependencies
+FROM node:22-alpine AS runner
 
 LABEL maintainer="FAIR Data Innovations Hub <contact@fairdataihub.org>" \
-  description="Testing Kamal workflow..."
+  description="Nuxt + Prisma + PostgreSQL optimized Docker image"
 
-# Busybox is used netcat for waiting for Postgres to be ready
+# Install only runtime dependencies:
+# - openssl: required by Prisma Client
+# - busybox-extras: provides netcat for DB readiness check
 RUN apk add --no-cache openssl busybox-extras
 
 WORKDIR /app
 
-# Copy only the necessary files from builder stage
-# COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.output ./
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-# Copy the Prisma schema & migrations, so `prisma migrate deploy` can see them
-COPY --from=builder /app/prisma ./prisma
+ENV NODE_ENV=production
+ENV NITRO_HOST=0.0.0.0
 
-# Copy our startup script and make it executable
-COPY scripts/start.sh /app/scripts/start.sh
-RUN chmod +x /app/scripts/start.sh
+# Install minimal Prisma CLI for running migrations at startup
+# We copy yarn.lock to extract exact Prisma version, then remove it
+COPY yarn.lock ./
+RUN PRISMA_VERSION=$(grep -A 2 'prisma@\^' yarn.lock | grep '  version' | head -1 | sed 's/.*version "\(.*\)"/\1/') \
+  && echo "Installing Prisma ${PRISMA_VERSION}" \
+  && yarn add --production --no-lockfile prisma@${PRISMA_VERSION} \
+  && yarn cache clean \
+  && rm yarn.lock
+
+# Copy compiled Nuxt application from build stage
+# Nitro bundles most dependencies, but some (like Prisma) remain in .output/server/node_modules
+COPY --from=build /app/.output ./.output
+
+# Copy Prisma schema and migrations for `prisma migrate deploy`
+COPY --from=build /app/prisma ./prisma
+
+# Copy startup script and make it executable
+COPY scripts/start.sh ./scripts/start.sh
+RUN chmod +x ./scripts/start.sh
 
 EXPOSE 3000
 
-# Run startup script that runs migrations before starting the app
-CMD ["/app/scripts/start.sh"]
+# Use startup script to run migrations before starting the app
+CMD ["./scripts/start.sh"]

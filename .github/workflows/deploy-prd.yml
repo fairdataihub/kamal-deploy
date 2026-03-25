@@ -31,6 +31,7 @@ jobs:
       KAMAL_DB_PORT_MAPPING: ${{ secrets.KAMAL_DB_PORT_MAPPING }}
       KAMAL_APP_DOMAIN: ${{ secrets.KAMAL_APP_DOMAIN }}
       KAMAL_APP_NAME: ${{ secrets.KAMAL_APP_NAME }}
+      KAMAL_IMAGE_NAME: ${{ secrets.KAMAL_IMAGE_NAME }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DB_HOST: ${{ secrets.DB_HOST }}
       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
@@ -62,11 +63,10 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # Step 5: Authenticate with Azure Container Registry
-      - name: Login to Azure Container Registry
-        uses: azure/docker-login@v1
+      # Step 5: Authenticate with Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          login-server: ${{ secrets.KAMAL_REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
           password: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
 

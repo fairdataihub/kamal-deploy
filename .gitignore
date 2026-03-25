@@ -23,3 +23,7 @@ postgres-data
 .env
 .env.*
 !.env.example
+
+# Benchmark results
+benchmark-results/
+*.backup
