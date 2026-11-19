@@ -24,7 +24,7 @@
   "dependencies": {
     "@iconify-json/lucide": "^1.2.38",
     "@iconify-json/simple-icons": "^1.2.33",
-    "@nuxt/ui": "^4.0.0",
+    "@nuxt/ui": "4.13.0",
     "nanoid": "^5.1.5",
     "nuxt": "^4.1.2",
     "unique-username-generator": "^1.4.0"
